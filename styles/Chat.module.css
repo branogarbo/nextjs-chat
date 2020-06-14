@@ -1,0 +1,71 @@
+.container {
+   width: 90vw;
+   height: 90vh;
+   display: flex;
+   flex-direction: column;
+}
+
+.chatWindow, .formEls > * {
+   margin-bottom: 0.5rem;
+   padding: 0.5rem;
+}
+
+.chatWindow {
+   flex-grow: 1;
+   overflow-y: scroll;
+   background: rgb(32,  33,  36);
+}
+
+.message {
+   width: fit-content;
+   padding: 0.7rem;
+   border-radius: 1.5rem;
+   font-size: 1rem;
+   max-width: 40%;
+   word-wrap: break-word;
+   display: inline-block;
+   margin-top: 0.1rem;
+}
+
+.infoMsg {
+   display: block;
+   height: 1rem;
+}
+
+.infoMsg, .nameMsg {
+   color: rgb(154, 160, 166);
+}
+
+.incoming, .outgoing {
+   width: 100%;
+   padding-bottom: 1.1rem;
+   display: inline-block;
+   height: fit-content;
+}
+
+.incoming > .message {
+   background: rgb(60,  64,  67);
+   color: rgb(232, 234, 237);
+   border-top-left-radius: 0.3rem;
+   float: left;
+}
+
+.outgoing > .message {
+   background: rgb(138, 180, 248);
+   color: rgb(32,  33,  36);
+   border-top-right-radius: 0.3rem;
+   float: right;
+}
+
+.incoming > .nameMsg {
+   float: left;
+}
+
+.outgoing > .nameMsg {
+   float: right;
+}
+
+.formEls > * {
+   width: 100%;
+   box-sizing: border-box;
+}

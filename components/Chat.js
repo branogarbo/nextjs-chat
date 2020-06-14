@@ -4,19 +4,19 @@ import style from '../styles/Chat.module.css'
 
 let socket;
 
-let Message = ({ name, message }) => (
-   <div className={style.message}>
-      <b>{name}</b><br />
-      <div>{message}</div>
+let Message = ({ name, message, incoming }) => (
+   <div className={incoming ? style.incoming : style.outgoing}>
+      <div className={style.nameMsg}>{name}</div><br />
+      <div className={style.message}>{message}</div>
    </div>
 );
 
 export default function Chat({ interactive }) {
    let nameInp = useRef('');
    let msgInp = useRef('');
+   let infoMsg = useRef('Messages will appear here');
 
    let [ msgPool, setMsgPool ] = useState([]);
-   let [ infoBox, setInfoBox ] = useState('Messages will appear here');
    
    let messages = msgPool.map(msg => <Message {...msg} key={msgPool.indexOf(msg)} />);
 
@@ -32,25 +32,41 @@ export default function Chat({ interactive }) {
          msgInp.current.value = "";
 
          socket.emit('msg', msg);
+         
+         msg.incoming = false;
+         processMsg(msg);
+         
+         // setTimeout(scrollToBottom, 20);
       }
    }
+
+   let processMsg = msg => {
+      infoMsg.current.innerHTML = "";
+      setMsgPool(prevMsgPool => [...prevMsgPool, msg]); // learn about updater function for states
+   }
+
+   let scrollToBottom = () => (
+      infoMsg.current.scrollIntoView({
+         behavior: 'smooth'
+      })
+   );
 
    let forgetIntrvl = null;
 
    let typingTiming = name => {
-      setInfoBox(`${name} is typing...`);
+      infoMsg.current.innerHTML = `${name} is typing...`;
 
       clearTimeout(forgetIntrvl);
 
       forgetIntrvl = setTimeout(()=>{
-         setInfoBox('');
+         infoMsg.current.innerHTML = "";
       }, 1000);
    }
 
    let checkKey = event => {
       if (event.key == "Enter") return sendMsg();
 
-      socket.emit('typing', nameInp.current.value.trim());
+      nameInp.current.value && socket.emit('typing', nameInp.current.value.trim());
    }
 
    useEffect(()=>{
@@ -61,26 +77,33 @@ export default function Chat({ interactive }) {
       });
 
       socket.on('msg', msg=>{
-         setInfoBox('');
-         setMsgPool(msgPool.push(msg)); // [...msgPool, msg] doesn't do the same thing for some reason
+         msg.incoming = true;
+
+         processMsg(msg);
+         scrollToBottom();
       });
 
       socket.on('typing', name=>{
          typingTiming(name);
+         scrollToBottom();
       });
 
       return () => socket.disconnect();
    }, []);
 
+   useEffect(()=>{
+      scrollToBottom();
+   }, [msgPool]);
+
    return (
-      <div className="container">
+      <div className={style.container}>
          <div className={style.chatWindow}>
-            {messages}
-            <i>{infoBox}</i>
+            <div>{messages}</div>
+            <i ref={infoMsg} className={style.infoMsg}>Messages will appear here</i>
          </div>
          
          {interactive && (
-         <div>   
+         <div className={style.formEls}>   
             <input type="text" placeholder="name" ref={nameInp} onBlur={disableNameInp} onKeyDown={event => event.key == "Enter" && msgInp.current.focus()} />
             <input type="text" placeholder="message" ref={msgInp} onKeyDown={checkKey} />
             <input type="submit" onClick={sendMsg} />

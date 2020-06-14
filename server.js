@@ -15,7 +15,7 @@ io.on('connection', socket=>{
    console.log('someone connected');
 
    socket.on('msg', msg=>{
-      io.sockets.emit('msg', msg);
+      socket.broadcast.emit('msg', msg);
    });
 
    socket.on('typing', name=>{
