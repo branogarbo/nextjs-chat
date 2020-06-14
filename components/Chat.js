@@ -68,7 +68,7 @@ export default function Chat({ interactive }) {
    }
 
    useEffect(()=>{
-      socket = io('http://localhost:3000');
+      socket = io();
 
       socket.on('connection', socket=>{
          console.log('connected to server');
