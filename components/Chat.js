@@ -78,7 +78,6 @@ export default function Chat({ interactive }) {
          msg.incoming = true;
 
          processMsg(msg);
-         scrollToBottom();
       });
 
       socket.on('typing', name=>{
