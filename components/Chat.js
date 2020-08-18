@@ -11,12 +11,12 @@ let Message = ({ name, message, incoming }) => (
    </div>
 );
 
-export default function Chat({ interactive }) {
+export default function Chat({ interactive, initMsgs }) {
    let nameInp = useRef('');
    let msgInp = useRef('');
    let infoMsg = useRef('Messages will appear here');
 
-   let [ msgPool, setMsgPool ] = useState([]);
+   let [ msgPool, setMsgPool ] = useState(initMsgs);
    
    let messages = msgPool.map(msg => <Message {...msg} key={msgPool.indexOf(msg)} />);
 
@@ -32,6 +32,14 @@ export default function Chat({ interactive }) {
          msgInp.current.value = "";
 
          socket.emit('msg', msg);
+
+         fetch('http://localhost:3000/msgLog', {
+            method: 'POST',
+            headers: {
+               'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(msg)
+         });
          
          msg.incoming = false;
          processMsg(msg);
