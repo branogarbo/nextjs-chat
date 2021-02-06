@@ -1,6 +1,7 @@
 import io from 'socket.io-client'
 import { useEffect, useState, useRef } from 'react'
 import style from '../styles/Chat.module.css'
+import { parse } from 'url'
 
 let socket;
 
@@ -70,17 +71,21 @@ export default function Chat({ interactive }) {
    useEffect(()=>{
       socket = io();
 
-      socket.on('connection', socket=>{
+      let urlParams = parse(window.location.href).pathname.split('/')[2];
+
+      socket.emit('joinRoom', urlParams);
+
+      socket.on('connection', socket => {
          console.log('connected to server');
       });
 
-      socket.on('msg', msg=>{
+      socket.on('msg', msg => {
          msg.incoming = true;
 
          processMsg(msg);
       });
 
-      socket.on('typing', name=>{
+      socket.on('typing', name => {
          typingTiming(name);
          scrollToBottom();
       });
