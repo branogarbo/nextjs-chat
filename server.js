@@ -12,8 +12,9 @@ let port = 3000;
 let listener = server.listen(port, console.log(`express listening on port ${port}`));
 let io = socket(listener);
 
-let rooms = {};
+let rooms = { ids: [] };
 // {
+//    ids: [<roomID1>, <roomID2>, ...],
 //    <roomID1>: {
 //       sockets: [<socketID1>, <socketID2>, ...]
 //    },
@@ -23,50 +24,53 @@ let rooms = {};
 //    ...
 // }
 
-
-let roomIDs = [];
-
 io.on('connection', socket => {
    console.log('someone connected');
 
    socket.on('msg', msg => {
-      socket.broadcast.emit('msg', msg);
+      socket.to(socket.roomID).broadcast.emit('msg', msg);
    });
 
    socket.on('typing', name => {
-      socket.broadcast.emit('typing', name);
+      socket.to(socket.roomID).broadcast.emit('typing', name);
    });
 
    socket.on('joinRoom', roomID => {
       socket.join(roomID);
-      rooms[roomID].sockets.push(socket.socketID);
+      
+      socket.roomID = roomID;
+      rooms[roomID].sockets.push(socket.id);
+
+      console.log(rooms);
    })
    
-   socket.on('disconnect', socket => {
+   socket.on('disconnect', () => {
       console.log('someone disconnected');
+      
+      let { roomID } = socket;
 
-      // value of roomID is still arbitrary atm
-      socket.leave(roomID)
-      if (!roomID.sockets.length) {
+      rooms[roomID].sockets  = rooms[roomID].sockets.filter(sock => sock != socket.id);
+      
+      if (!rooms[roomID].sockets.length) {
          delete rooms[roomID];
 
-         // and then remove roomID from roomIDs
+         rooms.ids = rooms.ids.filter(id => id != roomID);
       }
    });
 });
 
 app.prepare().then(()=>{
    server.get('/', (req,res) => {
-      res.send('DANG');
+      res.redirect('/rooms/new');
    })
 
    server.get('/rooms/:roomID', (req,res) => {
       let { roomID } = req.params;
 
-      if (!roomIDs.includes(roomID)) {
+      if (!rooms.ids.includes(roomID)) {
          let newRoomID = uuidv4();
 
-         roomIDs.push(newRoomID);
+         rooms.ids.push(newRoomID);
          rooms[newRoomID] = {
             sockets: []
          }
