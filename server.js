@@ -36,6 +36,8 @@ io.on('connection', socket => {
    });
 
    socket.on('joinRoom', roomID => {
+      if (!rooms[roomID]) return;
+
       socket.join(roomID);
       
       socket.roomID = roomID;
@@ -46,8 +48,10 @@ io.on('connection', socket => {
    
    socket.on('disconnect', () => {
       console.log('someone disconnected');
-      
+
       let { roomID } = socket;
+
+      if (!rooms[roomID]) return;
 
       rooms[roomID].sockets  = rooms[roomID].sockets.filter(sock => sock != socket.id);
       

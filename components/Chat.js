@@ -1,7 +1,7 @@
 import io from 'socket.io-client'
 import { useEffect, useState, useRef } from 'react'
 import style from '../styles/Chat.module.css'
-import { parse } from 'url'
+import parse from 'url-parse'
 
 let socket;
 
